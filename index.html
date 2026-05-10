@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arqos Task Board · v6</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    background: #FAF8F2;
+    color: #1F1F1F;
+    padding: 24px;
+    line-height: 1.5;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  header {
+    border-bottom: 2px solid #5A6B2F;
+    padding-bottom: 18px;
+    margin-bottom: 24px;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #5A6B2F;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+  .subtitle { font-size: 13px; color: #888; }
+  .last-updated {
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: #fff;
+    border: 1px solid #E8EDD8;
+    border-radius: 6px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 26px;
+    font-weight: 600;
+    color: #5A6B2F;
+    margin-bottom: 2px;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .progress-overall {
+    background: #fff;
+    border: 1px solid #E8EDD8;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+  }
+  .progress-overall-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 8px;
+  }
+  .progress-bar {
+    height: 8px;
+    background: #E8EDD8;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #5A6B2F, #7A8B4F);
+    transition: width 0.4s ease;
+  }
+
+  .controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+    align-items: center;
+  }
+  .filter-btn {
+    background: #fff;
+    border: 1px solid #E8EDD8;
+    color: #555;
+    padding: 7px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .filter-btn:hover { border-color: #5A6B2F; }
+  .filter-btn.active {
+    background: #5A6B2F;
+    color: #fff;
+    border-color: #5A6B2F;
+  }
+  .reload-btn {
+    margin-left: auto;
+    background: transparent;
+    border: 1px solid #ddd;
+    color: #888;
+    padding: 7px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .reload-btn:hover { border-color: #5A6B2F; color: #5A6B2F; }
+
+  .loading, .error {
+    text-align: center;
+    padding: 40px 20px;
+    color: #888;
+    font-size: 14px;
+  }
+  .error {
+    background: #FCE7EB;
+    color: #C41E3A;
+    border-radius: 6px;
+    padding: 16px;
+    font-size: 13px;
+    text-align: left;
+  }
+  .error code {
+    background: rgba(0,0,0,0.05);
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 11px;
+    word-break: break-all;
+  }
+
+  .block {
+    background: #fff;
+    border: 1px solid #E8EDD8;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .block-header {
+    background: #F4F0E2;
+    padding: 12px 16px;
+    border-bottom: 1px solid #E8EDD8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+  }
+  .block-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1F1F1F;
+    letter-spacing: -0.01em;
+  }
+  .block-meta {
+    font-size: 11px;
+    color: #888;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .block-progress {
+    width: 80px;
+    height: 5px;
+    background: #E8EDD8;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .block-progress-fill {
+    height: 100%;
+    background: #5A6B2F;
+    transition: width 0.3s;
+  }
+  .block-tasks { list-style: none; }
+  .block.collapsed .block-tasks { display: none; }
+
+  .task-item {
+    padding: 11px 16px;
+    border-bottom: 1px solid #F4F0E2;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .task-item:last-child { border-bottom: none; }
+  .task-item:hover { background: #FBFAF4; }
+
+  .task-status-icon {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: #fff;
+    font-weight: 600;
+  }
+  .icon-completada { background: #10B981; }
+  .icon-progreso { background: #F59E0B; }
+  .icon-pendiente { background: #C41E3A; }
+
+  .task-content { flex: 1; min-width: 0; }
+  .task-name {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #1F1F1F;
+    margin-bottom: 4px;
+  }
+  .task-item.completed .task-name {
+    text-decoration: line-through;
+    color: #999;
+  }
+  .task-meta {
+    display: flex;
+    gap: 8px;
+    font-size: 11px;
+    color: #888;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .task-status {
+    font-weight: 600;
+    font-size: 10.5px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .status-completada { background: #E0F9F4; color: #10B981; }
+  .status-pendiente { background: #FCE7EB; color: #C41E3A; }
+  .status-progreso { background: #FFFBF0; color: #F59E0B; }
+
+  .task-owner {
+    background: #EEF1E5;
+    color: #5A6B2F;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-weight: 500;
+    font-size: 10.5px;
+    letter-spacing: 0.02em;
+  }
+  .task-link {
+    color: #5A6B2F;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  .task-link:hover { text-decoration: underline; }
+  .task-note {
+    font-size: 11px;
+    color: #888;
+    font-style: italic;
+    margin-top: 3px;
+  }
+
+  footer {
+    margin-top: 30px;
+    padding-top: 16px;
+    border-top: 1px solid #E8EDD8;
+    font-size: 11px;
+    color: #aaa;
+    text-align: center;
+  }
+  footer a { color: #5A6B2F; text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    body { padding: 14px; }
+    h1 { font-size: 22px; }
+    .reload-btn { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>🎯 Arqos Task Board · v6</h1>
+    <p class="subtitle">57 tareas · 6 bloques · sincronizado con Google Sheets</p>
+    <p class="last-updated" id="lastUpdated">Cargando…</p>
+  </header>
+
+  <div id="appBody">
+    <div class="loading">⏳ Cargando datos del Sheet…</div>
+  </div>
+
+  <footer>
+    Lee directo del <a href="https://docs.google.com/spreadsheets/d/1lb1FgGvRC767Gd0Gv5ETIW6_-kli757IszwaF3_Bkg8/edit" target="_blank" rel="noopener noreferrer">Google Sheet de Arqos</a>.
+    Los cambios en el Sheet se reflejan aquí al recargar (botón ↻).
+  </footer>
+</div>
+
+<script>
+  // ╔══════════════════════════════════════════════════════════════╗
+  // ║  CONFIGURACIÓN                                               ║
+  // ║                                                              ║
+  // ║  Usamos el endpoint gviz de Google Sheets que sirve los      ║
+  // ║  datos como JSONP — funciona desde archivos locales (file://)║
+  // ║  sin problemas de CORS.                                      ║
+  // ╚══════════════════════════════════════════════════════════════╝
+  const SHEET_ID = "1lb1FgGvRC767Gd0Gv5ETIW6_-kli757IszwaF3_Bkg8";
+  const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=1`;
+
+  const BLOCK_ORDER = [
+    "Activación",
+    "Activación Comercial",
+    "Validación",
+    "Control y Ajuste",
+    "Checklist Diario",
+    "Reglas"
+  ];
+
+  let allTasks = [];
+  let currentFilter = "all";
+  let collapsedBlocks = new Set();
+
+  // ╔══════════════════════════════════════════════════════════════╗
+  // ║  CARGAR DATOS — usando script tag (JSONP-like)               ║
+  // ║  Esto evita CORS porque carga como script, no como fetch     ║
+  // ╚══════════════════════════════════════════════════════════════╝
+  function loadData() {
+    const body = document.getElementById("appBody");
+    body.innerHTML = '<div class="loading">⏳ Cargando datos del Sheet…</div>';
+
+    // Eliminar script anterior si existe
+    const oldScript = document.getElementById("gvizScript");
+    if (oldScript) oldScript.remove();
+
+    // Crear nuevo script tag para forzar recarga
+    const script = document.createElement("script");
+    script.id = "gvizScript";
+    script.src = GVIZ_URL + "&t=" + Date.now();
+    script.onerror = () => showError("No se pudo cargar el Sheet. Verifica que esté publicado y accesible.");
+
+    // El endpoint gviz devuelve algo tipo:
+    //   /*O_o*/\ngoogle.visualization.Query.setResponse({...JSON...});
+    // Como no podemos definir google.visualization.Query antes que cargue,
+    // interceptamos la respuesta usando un proxy.
+    window.google = window.google || {};
+    window.google.visualization = window.google.visualization || {};
+    window.google.visualization.Query = window.google.visualization.Query || {};
+    window.google.visualization.Query.setResponse = function(response) {
+      try {
+        processData(response);
+      } catch (err) {
+        console.error(err);
+        showError("Error procesando los datos: " + err.message);
+      }
+    };
+
+    document.head.appendChild(script);
+
+    // Timeout de seguridad
+    setTimeout(() => {
+      if (allTasks.length === 0 && document.querySelector(".loading")) {
+        showError("Tiempo de espera agotado. El Sheet no respondió en 10 segundos.");
+      }
+    }, 10000);
+  }
+
+  function showError(msg) {
+    document.getElementById("appBody").innerHTML = `
+      <div class="error">
+        <strong>⚠️ Error</strong><br>
+        ${msg}<br><br>
+        <small>Verifica:<br>
+        1. Que el Sheet esté compartido como <em>"Cualquiera con el enlace puede ver"</em><br>
+        2. Que el ID del Sheet sea correcto: <code>${SHEET_ID}</code><br>
+        3. Que tengas conexión a internet</small>
+      </div>`;
+  }
+
+  // ╔══════════════════════════════════════════════════════════════╗
+  // ║  PROCESAR RESPUESTA DE GVIZ                                  ║
+  // ╚══════════════════════════════════════════════════════════════╝
+  function processData(response) {
+    if (!response || !response.table || !response.table.rows) {
+      throw new Error("Formato de respuesta inesperado");
+    }
+
+    const rows = response.table.rows;
+    let lastBlock = "";
+    const tasks = [];
+
+    rows.forEach((row, idx) => {
+      if (!row.c) return;
+      const cells = row.c.map(c => (c && c.v != null) ? String(c.v).trim() : "");
+
+      const bloque = cells[0] || "";
+      const tarea = cells[1] || "";
+      const estado = cells[2] || "";
+      const responsable = cells[3] || "";
+      const link = cells[4] || "";
+      const fecha = cells[5] || "";
+      const prioridad = cells[6] || "";
+
+      if (!tarea && !bloque) return;
+      if (bloque) lastBlock = bloque;
+      if (!tarea) return;
+
+      tasks.push({
+        id: idx,
+        bloque: lastBlock,
+        tarea,
+        estado: estado || "Pendiente",
+        responsable,
+        link,
+        fecha,
+        prioridad
+      });
+    });
+
+    allTasks = tasks;
+    const now = new Date();
+    document.getElementById("lastUpdated").textContent =
+      "Última sincronización: " + now.toLocaleString("es-MX");
+    render();
+  }
+
+  // ╔══════════════════════════════════════════════════════════════╗
+  // ║  HELPERS DE ESTADO                                           ║
+  // ╚══════════════════════════════════════════════════════════════╝
+  function normalizeEstado(e) {
+    const v = (e || "").toLowerCase();
+    if (v.includes("complet")) return "Completada";
+    if (v.includes("progres")) return "En progreso";
+    return "Pendiente";
+  }
+
+  function statusIcon(estado) {
+    const e = normalizeEstado(estado);
+    if (e === "Completada") return '<div class="task-status-icon icon-completada">✓</div>';
+    if (e === "En progreso") return '<div class="task-status-icon icon-progreso">●</div>';
+    return '<div class="task-status-icon icon-pendiente">○</div>';
+  }
+
+  function statusClass(estado) {
+    const e = normalizeEstado(estado);
+    if (e === "Completada") return "status-completada";
+    if (e === "En progreso") return "status-progreso";
+    return "status-pendiente";
+  }
+
+  // ╔══════════════════════════════════════════════════════════════╗
+  // ║  RENDER                                                      ║
+  // ╚══════════════════════════════════════════════════════════════╝
+  function render() {
+    const body = document.getElementById("appBody");
+
+    let filtered = allTasks;
+    if (currentFilter !== "all") {
+      filtered = allTasks.filter(t => normalizeEstado(t.estado) === currentFilter);
+    }
+
+    const total = allTasks.length;
+    const completadas = allTasks.filter(t => normalizeEstado(t.estado) === "Completada").length;
+    const enProgreso = allTasks.filter(t => normalizeEstado(t.estado) === "En progreso").length;
+    const pendientes = allTasks.filter(t => normalizeEstado(t.estado) === "Pendiente").length;
+    const pct = total > 0 ? Math.round((completadas / total) * 100) : 0;
+
+    let html = `
+      <div class="stats">
+        <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">Total</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:#10B981;">${completadas}</div><div class="stat-label">Completadas</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:#F59E0B;">${enProgreso}</div><div class="stat-label">En progreso</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:#C41E3A;">${pendientes}</div><div class="stat-label">Pendientes</div></div>
+      </div>
+
+      <div class="progress-overall">
+        <div class="progress-overall-label">
+          <span>Progreso general</span>
+          <span><strong>${pct}%</strong> completado</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${pct}%"></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" data-filter="all">Todas (${total})</button>
+        <button class="filter-btn ${currentFilter === 'Pendiente' ? 'active' : ''}" data-filter="Pendiente">⏳ Pendientes (${pendientes})</button>
+        <button class="filter-btn ${currentFilter === 'En progreso' ? 'active' : ''}" data-filter="En progreso">🔄 En progreso (${enProgreso})</button>
+        <button class="filter-btn ${currentFilter === 'Completada' ? 'active' : ''}" data-filter="Completada">✅ Completadas (${completadas})</button>
+        <button class="reload-btn" id="reloadBtn">↻ Recargar Sheet</button>
+      </div>
+    `;
+
+    const grouped = {};
+    BLOCK_ORDER.forEach(b => grouped[b] = []);
+    filtered.forEach(t => {
+      if (!grouped[t.bloque]) grouped[t.bloque] = [];
+      grouped[t.bloque].push(t);
+    });
+
+    BLOCK_ORDER.forEach(blockName => {
+      const tasks = grouped[blockName] || [];
+      if (tasks.length === 0 && currentFilter !== "all") return;
+
+      const blockAll = allTasks.filter(t => t.bloque === blockName);
+      const blockDone = blockAll.filter(t => normalizeEstado(t.estado) === "Completada").length;
+      const blockPct = blockAll.length > 0 ? Math.round((blockDone / blockAll.length) * 100) : 0;
+      const isCollapsed = collapsedBlocks.has(blockName);
+
+      html += `
+        <div class="block ${isCollapsed ? 'collapsed' : ''}" data-block="${blockName}">
+          <div class="block-header" onclick="toggleBlock('${blockName.replace(/'/g, "\\'")}')">
+            <div class="block-title">${blockName}</div>
+            <div class="block-meta">
+              <span>${blockDone}/${blockAll.length}</span>
+              <div class="block-progress"><div class="block-progress-fill" style="width:${blockPct}%"></div></div>
+              <span>${isCollapsed ? '▸' : '▾'}</span>
+            </div>
+          </div>
+          <ul class="block-tasks">
+      `;
+
+      if (tasks.length === 0) {
+        html += `<li class="task-item"><div class="task-content" style="color:#aaa;font-size:12px;">— sin tareas en este filtro —</div></li>`;
+      } else {
+        tasks.forEach(t => {
+          const norm = normalizeEstado(t.estado);
+          const isCompleted = norm === "Completada";
+          const isLink = t.link && (t.link.startsWith("http://") || t.link.startsWith("https://"));
+          const linkHtml = isLink
+            ? `<a href="${escapeHtml(t.link)}" target="_blank" rel="noopener noreferrer" class="task-link" title="Abrir documento">📎</a>`
+            : '';
+          const noteHtml = (t.link && !isLink)
+            ? `<div class="task-note">${escapeHtml(t.link)}</div>`
+            : '';
+
+          html += `
+            <li class="task-item ${isCompleted ? 'completed' : ''}">
+              ${statusIcon(t.estado)}
+              <div class="task-content">
+                <div class="task-name">${escapeHtml(t.tarea)} ${linkHtml}</div>
+                <div class="task-meta">
+                  <span class="task-status ${statusClass(t.estado)}">${norm}</span>
+                  ${t.responsable ? `<span class="task-owner">${escapeHtml(t.responsable)}</span>` : ''}
+                  ${t.fecha ? `<span>📅 ${escapeHtml(t.fecha)}</span>` : ''}
+                  ${t.prioridad ? `<span>⚡ ${escapeHtml(t.prioridad)}</span>` : ''}
+                </div>
+                ${noteHtml}
+              </div>
+            </li>
+          `;
+        });
+      }
+
+      html += `</ul></div>`;
+    });
+
+    body.innerHTML = html;
+
+    document.querySelectorAll(".filter-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        currentFilter = btn.dataset.filter;
+        render();
+      });
+    });
+    document.getElementById("reloadBtn").addEventListener("click", loadData);
+  }
+
+  function toggleBlock(name) {
+    if (collapsedBlocks.has(name)) collapsedBlocks.delete(name);
+    else collapsedBlocks.add(name);
+    render();
+  }
+  window.toggleBlock = toggleBlock;
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  loadData();
+</script>
+</body>
+</html>
