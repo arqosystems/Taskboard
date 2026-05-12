@@ -911,17 +911,30 @@
     function loadTasks() {
       document.getElementById("bloques-view").innerHTML = '<div class="loading">CARGANDO…</div>';
 
-      // Lectura vía gviz (público read-only)
-      const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
+      // Lectura vía gviz (público read-only) - headers=1 fuerza que use fila 1 como headers
+      const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&headers=1&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
 
       fetch(url)
         .then(r => r.text())
         .then(txt => {
           const json = JSON.parse(txt.substr(47).slice(0, -2));
           const rows = json.table.rows || [];
-          const cols = json.table.cols.map(c => (c.label || c.id || "").toLowerCase());
+          // Si los labels vienen vacíos, usar la primera fila como headers
+          let cols = json.table.cols.map(c => (c.label || "").toLowerCase().trim());
+          let dataRows = rows;
 
-          TASKS = rows.map((row, idx) => {
+          // Detectar si los headers vienen en la primera fila de datos en vez de cols
+          const labelsEmpty = cols.every(c => !c);
+          if (labelsEmpty && rows.length > 0) {
+            const firstRow = rows[0].c || [];
+            cols = firstRow.map(cell => {
+              if (!cell) return "";
+              return String(cell.v || cell.f || "").toLowerCase().trim();
+            });
+            dataRows = rows.slice(1);
+          }
+
+          TASKS = dataRows.map((row, idx) => {
             const cells = row.c || [];
             const obj = { _row: idx + 2 };
             cols.forEach((col, i) => {
