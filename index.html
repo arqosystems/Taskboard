@@ -1,598 +1,1382 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Arqos Task Board · v6</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
-    background: #FAF8F2;
-    color: #1F1F1F;
-    padding: 24px;
-    line-height: 1.5;
-  }
-  .container { max-width: 1100px; margin: 0 auto; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arqos Task Board · v7</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+  <style>
+    :root {
+      /* Paleta Arqos */
+      --verde-oscuro: #1B2818;
+      --verde-medio: #2A3D26;
+      --verde-claro: #3D5437;
+      --dorado: #C9A961;
+      --dorado-claro: #E0C284;
+      --dorado-oscuro: #8B7340;
+      --crema: #FAF8F2;
+      --crema-soft: #E8E5DA;
+      --gris-suave: rgba(250, 248, 242, 0.08);
+      --gris-borde: rgba(201, 169, 97, 0.15);
+      --rojo-alerta: #E5775F;
+      --verde-ok: #7FA876;
+      --naranja-medio: #D4A574;
 
-  header {
-    border-bottom: 2px solid #5A6B2F;
-    padding-bottom: 18px;
-    margin-bottom: 24px;
-  }
-  h1 {
-    font-size: 28px;
-    font-weight: 600;
-    color: #5A6B2F;
-    letter-spacing: -0.02em;
-    margin-bottom: 4px;
-  }
-  .subtitle { font-size: 13px; color: #888; }
-  .last-updated {
-    font-size: 11px;
-    color: #aaa;
-    margin-top: 6px;
-    font-style: italic;
-  }
+      /* Tipografía */
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+    }
 
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-  .stat-card {
-    background: #fff;
-    border: 1px solid #E8EDD8;
-    border-radius: 6px;
-    padding: 14px;
-    text-align: center;
-  }
-  .stat-value {
-    font-size: 26px;
-    font-weight: 600;
-    color: #5A6B2F;
-    margin-bottom: 2px;
-  }
-  .stat-label {
-    font-size: 11px;
-    color: #888;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  .progress-overall {
-    background: #fff;
-    border: 1px solid #E8EDD8;
-    border-radius: 6px;
-    padding: 14px 18px;
-    margin-bottom: 24px;
-  }
-  .progress-overall-label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    color: #555;
-    margin-bottom: 8px;
-  }
-  .progress-bar {
-    height: 8px;
-    background: #E8EDD8;
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #5A6B2F, #7A8B4F);
-    transition: width 0.4s ease;
-  }
+    html, body {
+      background: var(--verde-oscuro);
+      color: var(--crema);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
 
-  .controls {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 18px;
-    align-items: center;
-  }
-  .filter-btn {
-    background: #fff;
-    border: 1px solid #E8EDD8;
-    color: #555;
-    padding: 7px 14px;
-    border-radius: 4px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.15s;
-    font-family: inherit;
-  }
-  .filter-btn:hover { border-color: #5A6B2F; }
-  .filter-btn.active {
-    background: #5A6B2F;
-    color: #fff;
-    border-color: #5A6B2F;
-  }
-  .reload-btn {
-    margin-left: auto;
-    background: transparent;
-    border: 1px solid #ddd;
-    color: #888;
-    padding: 7px 12px;
-    border-radius: 4px;
-    font-size: 12px;
-    cursor: pointer;
-    font-family: inherit;
-  }
-  .reload-btn:hover { border-color: #5A6B2F; color: #5A6B2F; }
+    /* ============== LOGIN ============== */
+    #login-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--verde-oscuro);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      flex-direction: column;
+    }
+    #login-screen.hidden { display: none; }
+    .login-box {
+      background: var(--verde-medio);
+      border: 1px solid var(--gris-borde);
+      border-radius: 12px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+    }
+    .login-brand {
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--dorado);
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    .login-title {
+      font-family: var(--font-serif);
+      font-size: 28px;
+      color: var(--crema);
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+    .login-sub {
+      font-size: 12px;
+      color: rgba(250, 248, 242, 0.5);
+      margin-bottom: 28px;
+    }
+    .pin-input {
+      width: 100%;
+      background: var(--verde-oscuro);
+      border: 1px solid var(--gris-borde);
+      color: var(--crema);
+      font-size: 24px;
+      text-align: center;
+      letter-spacing: 8px;
+      padding: 14px;
+      border-radius: 8px;
+      outline: none;
+      font-family: var(--font-sans);
+      transition: border-color 0.2s;
+    }
+    .pin-input:focus { border-color: var(--dorado); }
+    .pin-btn {
+      width: 100%;
+      background: var(--dorado);
+      color: var(--verde-oscuro);
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 14px;
+      letter-spacing: 1px;
+      transition: background 0.2s;
+    }
+    .pin-btn:hover { background: var(--dorado-claro); }
+    .pin-error {
+      color: var(--rojo-alerta);
+      font-size: 12px;
+      margin-top: 12px;
+      min-height: 16px;
+    }
 
-  .loading, .error {
-    text-align: center;
-    padding: 40px 20px;
-    color: #888;
-    font-size: 14px;
-  }
-  .error {
-    background: #FCE7EB;
-    color: #C41E3A;
-    border-radius: 6px;
-    padding: 16px;
-    font-size: 13px;
-    text-align: left;
-  }
-  .error code {
-    background: rgba(0,0,0,0.05);
-    padding: 2px 5px;
-    border-radius: 3px;
-    font-size: 11px;
-    word-break: break-all;
-  }
+    /* ============== HEADER ============== */
+    #app-container { padding: 24px; max-width: 1400px; margin: 0 auto; }
 
-  .block {
-    background: #fff;
-    border: 1px solid #E8EDD8;
-    border-radius: 6px;
-    margin-bottom: 16px;
-    overflow: hidden;
-  }
-  .block-header {
-    background: #F4F0E2;
-    padding: 12px 16px;
-    border-bottom: 1px solid #E8EDD8;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    user-select: none;
-  }
-  .block-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #1F1F1F;
-    letter-spacing: -0.01em;
-  }
-  .block-meta {
-    font-size: 11px;
-    color: #888;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .block-progress {
-    width: 80px;
-    height: 5px;
-    background: #E8EDD8;
-    border-radius: 3px;
-    overflow: hidden;
-  }
-  .block-progress-fill {
-    height: 100%;
-    background: #5A6B2F;
-    transition: width 0.3s;
-  }
-  .block-tasks { list-style: none; }
-  .block.collapsed .block-tasks { display: none; }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--gris-borde);
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .brand-block { display: flex; align-items: center; gap: 14px; }
+    .brand-mark {
+      width: 40px; height: 40px;
+      background: var(--dorado);
+      color: var(--verde-oscuro);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 18px;
+      font-family: var(--font-serif);
+    }
+    .brand-text .label {
+      font-size: 10px; letter-spacing: 3px; color: var(--dorado);
+      font-weight: 500;
+    }
+    .brand-text .title {
+      font-family: var(--font-serif);
+      font-size: 24px; color: var(--crema); font-weight: 500;
+      line-height: 1.1;
+    }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
 
-  .task-item {
-    padding: 11px 16px;
-    border-bottom: 1px solid #F4F0E2;
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-  }
-  .task-item:last-child { border-bottom: none; }
-  .task-item:hover { background: #FBFAF4; }
+    .btn {
+      background: transparent;
+      border: 1px solid var(--gris-borde);
+      color: var(--crema);
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--font-sans);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover { border-color: var(--dorado); color: var(--dorado); }
+    .btn-primary {
+      background: var(--dorado);
+      color: var(--verde-oscuro);
+      border-color: var(--dorado);
+      font-weight: 600;
+    }
+    .btn-primary:hover { background: var(--dorado-claro); color: var(--verde-oscuro); }
+    .btn-danger { border-color: rgba(229, 119, 95, 0.3); color: var(--rojo-alerta); }
+    .btn-danger:hover { background: rgba(229, 119, 95, 0.1); border-color: var(--rojo-alerta); }
 
-  .task-status-icon {
-    flex-shrink: 0;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    margin-top: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    color: #fff;
-    font-weight: 600;
-  }
-  .icon-completada { background: #10B981; }
-  .icon-progreso { background: #F59E0B; }
-  .icon-pendiente { background: #C41E3A; }
+    /* ============== TABS ============== */
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--gris-borde);
+      padding-bottom: 0;
+    }
+    .tab {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: rgba(250, 248, 242, 0.5);
+      padding: 10px 18px;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: var(--font-sans);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tab:hover { color: var(--crema); }
+    .tab.active {
+      color: var(--dorado);
+      border-bottom-color: var(--dorado);
+    }
 
-  .task-content { flex: 1; min-width: 0; }
-  .task-name {
-    font-size: 13.5px;
-    font-weight: 500;
-    color: #1F1F1F;
-    margin-bottom: 4px;
-  }
-  .task-item.completed .task-name {
-    text-decoration: line-through;
-    color: #999;
-  }
-  .task-meta {
-    display: flex;
-    gap: 8px;
-    font-size: 11px;
-    color: #888;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-  .task-status {
-    font-weight: 600;
-    font-size: 10.5px;
-    padding: 2px 7px;
-    border-radius: 3px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-  .status-completada { background: #E0F9F4; color: #10B981; }
-  .status-pendiente { background: #FCE7EB; color: #C41E3A; }
-  .status-progreso { background: #FFFBF0; color: #F59E0B; }
+    /* ============== STATS BAR ============== */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--verde-medio);
+      border: 1px solid var(--gris-borde);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .stat-label {
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      color: rgba(250, 248, 242, 0.5);
+      margin-bottom: 4px;
+    }
+    .stat-value {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--crema);
+      font-family: var(--font-serif);
+    }
+    .stat-value.dorado { color: var(--dorado); }
 
-  .task-owner {
-    background: #EEF1E5;
-    color: #5A6B2F;
-    padding: 2px 7px;
-    border-radius: 3px;
-    font-weight: 500;
-    font-size: 10.5px;
-    letter-spacing: 0.02em;
-  }
-  .task-link {
-    color: #5A6B2F;
-    text-decoration: none;
-    font-size: 14px;
-  }
-  .task-link:hover { text-decoration: underline; }
-  .task-note {
-    font-size: 11px;
-    color: #888;
-    font-style: italic;
-    margin-top: 3px;
-  }
+    /* ============== FILTERS ============== */
+    .filters {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-input, .filter-select {
+      background: var(--verde-medio);
+      border: 1px solid var(--gris-borde);
+      color: var(--crema);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: var(--font-sans);
+      outline: none;
+    }
+    .filter-input:focus, .filter-select:focus { border-color: var(--dorado); }
+    .filter-input { min-width: 200px; }
 
-  footer {
-    margin-top: 30px;
-    padding-top: 16px;
-    border-top: 1px solid #E8EDD8;
-    font-size: 11px;
-    color: #aaa;
-    text-align: center;
-  }
-  footer a { color: #5A6B2F; text-decoration: none; }
-  footer a:hover { text-decoration: underline; }
+    /* ============== BLOQUES VIEW ============== */
+    .bloque {
+      background: rgba(250, 248, 242, 0.03);
+      border: 1px solid var(--gris-borde);
+      border-radius: 10px;
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+    .bloque-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+    .bloque-header:hover { background: rgba(201, 169, 97, 0.05); }
+    .bloque-title-wrap {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .bloque-bar { width: 4px; height: 22px; background: var(--dorado); border-radius: 2px; }
+    .bloque-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--crema);
+    }
+    .bloque-meta {
+      font-size: 11px;
+      color: rgba(250, 248, 242, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .progress-bar {
+      width: 80px;
+      height: 4px;
+      background: var(--gris-suave);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--dorado);
+      transition: width 0.4s;
+    }
+    .bloque-body {
+      padding: 0 14px 14px;
+      display: none;
+    }
+    .bloque.open .bloque-body { display: block; }
+    .bloque.open .bloque-header .chevron { transform: rotate(180deg); }
+    .chevron { transition: transform 0.2s; font-size: 12px; color: var(--dorado); }
 
-  @media (max-width: 600px) {
-    body { padding: 14px; }
-    h1 { font-size: 22px; }
-    .reload-btn { margin-left: 0; }
-  }
-</style>
+    /* ============== TASK CARD ============== */
+    .task {
+      background: rgba(27, 40, 24, 0.5);
+      border-left: 3px solid var(--dorado);
+      border-radius: 6px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+    .task:hover { background: rgba(27, 40, 24, 0.8); }
+    .task.completed { opacity: 0.5; border-left-color: rgba(250, 248, 242, 0.2); }
+    .task.completed .task-name { text-decoration: line-through; color: rgba(250, 248, 242, 0.5); }
+    .task.priority-alta { border-left-color: var(--rojo-alerta); }
+    .task.priority-media { border-left-color: var(--naranja-medio); }
+    .task.priority-baja { border-left-color: var(--verde-ok); }
+
+    .task-check {
+      width: 18px; height: 18px;
+      border: 1.5px solid var(--dorado);
+      border-radius: 4px;
+      flex-shrink: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+      transition: all 0.2s;
+    }
+    .task-check:hover { background: rgba(201, 169, 97, 0.15); }
+    .task-check.checked { background: var(--dorado); }
+    .task-check.checked::after {
+      content: "✓"; color: var(--verde-oscuro); font-size: 12px; font-weight: 700;
+    }
+
+    .task-body { flex: 1; min-width: 0; }
+    .task-name {
+      font-size: 13px;
+      color: var(--crema);
+      margin-bottom: 6px;
+      word-wrap: break-word;
+    }
+    .task-meta {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .tag {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .tag-asignado { background: rgba(201, 169, 97, 0.15); color: var(--dorado); }
+    .tag-fecha { background: var(--gris-suave); color: rgba(250, 248, 242, 0.7); }
+    .tag-prioridad-alta { background: rgba(229, 119, 95, 0.15); color: var(--rojo-alerta); }
+    .tag-prioridad-media { background: rgba(212, 165, 116, 0.15); color: var(--naranja-medio); }
+    .tag-prioridad-baja { background: rgba(127, 168, 118, 0.15); color: var(--verde-ok); }
+    .tag-custom { background: rgba(61, 84, 55, 0.5); color: var(--crema-soft); }
+
+    .task-actions {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .icon-btn {
+      width: 26px; height: 26px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: rgba(250, 248, 242, 0.4);
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .icon-btn:hover { color: var(--dorado); border-color: var(--gris-borde); }
+    .icon-btn.danger:hover { color: var(--rojo-alerta); border-color: rgba(229, 119, 95, 0.3); }
+
+    /* ============== LISTA VIEW ============== */
+    #lista-view { display: none; }
+    .lista-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(250, 248, 242, 0.03);
+      border: 1px solid var(--gris-borde);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .lista-table th {
+      background: var(--verde-medio);
+      color: var(--dorado);
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      font-weight: 500;
+      text-align: left;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--gris-borde);
+    }
+    .lista-table td {
+      padding: 12px 14px;
+      font-size: 12px;
+      color: var(--crema);
+      border-bottom: 1px solid rgba(201, 169, 97, 0.08);
+    }
+    .lista-table tr:hover td { background: rgba(201, 169, 97, 0.05); }
+
+    /* ============== CALENDAR VIEW ============== */
+    #calendar-view { display: none; }
+    #calendar {
+      background: rgba(250, 248, 242, 0.03);
+      border: 1px solid var(--gris-borde);
+      border-radius: 10px;
+      padding: 18px;
+    }
+    .fc { color: var(--crema); font-family: var(--font-sans); }
+    .fc-theme-standard td, .fc-theme-standard th, .fc-theme-standard .fc-scrollgrid {
+      border-color: var(--gris-borde) !important;
+    }
+    .fc-col-header-cell-cushion, .fc-daygrid-day-number {
+      color: var(--crema-soft) !important;
+      text-decoration: none !important;
+      font-size: 12px;
+    }
+    .fc-button-primary {
+      background-color: var(--verde-medio) !important;
+      border-color: var(--gris-borde) !important;
+      color: var(--crema) !important;
+      font-size: 12px !important;
+      text-transform: capitalize !important;
+    }
+    .fc-button-primary:hover { background-color: var(--verde-claro) !important; }
+    .fc-button-primary.fc-button-active {
+      background-color: var(--dorado) !important;
+      color: var(--verde-oscuro) !important;
+      border-color: var(--dorado) !important;
+    }
+    .fc-toolbar-title {
+      color: var(--dorado) !important;
+      font-family: var(--font-serif) !important;
+      font-weight: 500 !important;
+    }
+    .fc-event {
+      background-color: var(--dorado) !important;
+      border: none !important;
+      color: var(--verde-oscuro) !important;
+      font-size: 11px !important;
+      padding: 2px 6px !important;
+      cursor: pointer;
+    }
+    .fc-event.priority-alta { background-color: var(--rojo-alerta) !important; color: var(--crema) !important; }
+    .fc-event.priority-media { background-color: var(--naranja-medio) !important; }
+    .fc-event.priority-baja { background-color: var(--verde-ok) !important; color: var(--crema) !important; }
+    .fc-event.completed { opacity: 0.4; }
+    .fc-day-today { background-color: rgba(201, 169, 97, 0.08) !important; }
+
+    /* ============== MODAL ============== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 15, 8, 0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: var(--verde-medio);
+      border: 1px solid var(--gris-borde);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 24px;
+    }
+    .modal-title {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      color: var(--dorado);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .modal-sub {
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      color: rgba(250, 248, 242, 0.5);
+      margin-bottom: 20px;
+    }
+    .form-group { margin-bottom: 14px; }
+    .form-label {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      color: var(--dorado);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      background: var(--verde-oscuro);
+      border: 1px solid var(--gris-borde);
+      color: var(--crema);
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: var(--font-sans);
+      outline: none;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--dorado); }
+    .form-textarea { resize: vertical; min-height: 70px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--gris-borde);
+    }
+
+    /* Subtareas & Comentarios */
+    .sub-list { margin-top: 6px; }
+    .sub-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      font-size: 12px;
+    }
+    .sub-item input[type="text"] {
+      flex: 1;
+      background: transparent;
+      border: none;
+      border-bottom: 1px dashed var(--gris-borde);
+      color: var(--crema);
+      padding: 4px 0;
+      font-size: 12px;
+      outline: none;
+      font-family: var(--font-sans);
+    }
+    .sub-item input[type="text"]:focus { border-bottom-color: var(--dorado); }
+    .sub-check {
+      width: 14px; height: 14px;
+      border: 1.5px solid var(--dorado);
+      border-radius: 3px;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sub-check.checked { background: var(--dorado); }
+    .sub-check.checked::after { content: "✓"; color: var(--verde-oscuro); font-size: 10px; font-weight: 700; }
+    .sub-add-btn {
+      background: transparent;
+      border: 1px dashed var(--gris-borde);
+      color: var(--dorado);
+      width: 100%;
+      padding: 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    .sub-add-btn:hover { background: rgba(201, 169, 97, 0.05); }
+
+    .comment-list { margin-top: 6px; max-height: 200px; overflow-y: auto; }
+    .comment {
+      background: var(--verde-oscuro);
+      border-left: 2px solid var(--dorado);
+      padding: 8px 10px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+    .comment-meta {
+      font-size: 10px;
+      color: var(--dorado);
+      letter-spacing: 1px;
+      margin-bottom: 3px;
+    }
+    .comment-text { font-size: 12px; color: var(--crema); }
+
+    /* Empty state */
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: rgba(250, 248, 242, 0.4);
+    }
+    .empty-title {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      color: var(--dorado);
+      margin-bottom: 6px;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--dorado);
+      font-size: 12px;
+      letter-spacing: 2px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--verde-medio);
+      border: 1px solid var(--dorado);
+      color: var(--crema);
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      z-index: 2000;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { border-color: var(--rojo-alerta); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--verde-oscuro); }
+    ::-webkit-scrollbar-thumb { background: var(--gris-borde); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--dorado-oscuro); }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      #app-container { padding: 14px; }
+      .brand-text .title { font-size: 18px; }
+      .filter-input { min-width: 100%; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+
+    footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--gris-borde);
+      text-align: center;
+      font-size: 11px;
+      color: rgba(250, 248, 242, 0.4);
+      letter-spacing: 1px;
+    }
+    footer a { color: var(--dorado); text-decoration: none; }
+  </style>
 </head>
 <body>
-<div class="container">
-  <header>
-    <h1>🎯 Arqos Task Board · v6</h1>
-    <p class="subtitle">57 tareas · 6 bloques · sincronizado con Google Sheets</p>
-    <p class="last-updated" id="lastUpdated">Cargando…</p>
-  </header>
 
-  <div id="appBody">
-    <div class="loading">⏳ Cargando datos del Sheet…</div>
+  <!-- ============== LOGIN ============== -->
+  <div id="login-screen">
+    <div class="login-box">
+      <div class="login-brand">ARQOS SYSTEMS</div>
+      <div class="login-title">Task Board</div>
+      <div class="login-sub">v7 · Acceso privado</div>
+      <input type="password" id="pin-input" class="pin-input" maxlength="4" placeholder="• • • •" inputmode="numeric" autocomplete="off">
+      <button class="pin-btn" id="pin-btn">ENTRAR</button>
+      <div class="pin-error" id="pin-error"></div>
+    </div>
   </div>
 
-  <footer>
-    Lee directo del <a href="https://docs.google.com/spreadsheets/d/1lb1FgGvRC767Gd0Gv5ETIW6_-kli757IszwaF3_Bkg8/edit" target="_blank" rel="noopener noreferrer">Google Sheet de Arqos</a>.
-    Los cambios en el Sheet se reflejan aquí al recargar (botón ↻).
-  </footer>
-</div>
+  <!-- ============== APP ============== -->
+  <div id="app-container" style="display:none;">
 
-<script>
-  // ╔══════════════════════════════════════════════════════════════╗
-  // ║  CONFIGURACIÓN                                               ║
-  // ║                                                              ║
-  // ║  Usamos el endpoint gviz de Google Sheets que sirve los      ║
-  // ║  datos como JSONP — funciona desde archivos locales (file://)║
-  // ║  sin problemas de CORS.                                      ║
-  // ╚══════════════════════════════════════════════════════════════╝
-  const SHEET_ID = "1lb1FgGvRC767Gd0Gv5ETIW6_-kli757IszwaF3_Bkg8";
-  const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=1`;
+    <header>
+      <div class="brand-block">
+        <div class="brand-mark">A</div>
+        <div class="brand-text">
+          <div class="label">ARQOS SYSTEMS</div>
+          <div class="title">Task Board · v7</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn" id="btn-reload" title="Recargar desde Sheet">↻</button>
+        <button class="btn btn-primary" id="btn-new">+ Nueva tarea</button>
+      </div>
+    </header>
 
-  const BLOCK_ORDER = [
-    "Activación",
-    "Activación Comercial",
-    "Validación",
-    "Control y Ajuste",
-    "Checklist Diario",
-    "Reglas"
-  ];
+    <!-- Stats -->
+    <div class="stats-bar" id="stats-bar"></div>
 
-  let allTasks = [];
-  let currentFilter = "all";
-  let collapsedBlocks = new Set();
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-view="bloques">⚏ Bloques</button>
+      <button class="tab" data-view="calendar">📅 Calendario</button>
+      <button class="tab" data-view="lista">≡ Lista</button>
+    </div>
 
-  // ╔══════════════════════════════════════════════════════════════╗
-  // ║  CARGAR DATOS — usando script tag (JSONP-like)               ║
-  // ║  Esto evita CORS porque carga como script, no como fetch     ║
-  // ╚══════════════════════════════════════════════════════════════╝
-  function loadData() {
-    const body = document.getElementById("appBody");
-    body.innerHTML = '<div class="loading">⏳ Cargando datos del Sheet…</div>';
+    <!-- Filters -->
+    <div class="filters">
+      <input type="text" class="filter-input" id="filter-search" placeholder="Buscar tarea…">
+      <select class="filter-select" id="filter-asignado">
+        <option value="">Todos los asignados</option>
+        <option value="César">César</option>
+        <option value="Juan Manuel">Juan Manuel</option>
+        <option value="Ambos">Ambos</option>
+      </select>
+      <select class="filter-select" id="filter-prioridad">
+        <option value="">Todas las prioridades</option>
+        <option value="alta">Alta</option>
+        <option value="media">Media</option>
+        <option value="baja">Baja</option>
+      </select>
+      <select class="filter-select" id="filter-status">
+        <option value="pending">Pendientes</option>
+        <option value="all">Todas</option>
+        <option value="done">Completadas</option>
+      </select>
+    </div>
 
-    // Eliminar script anterior si existe
-    const oldScript = document.getElementById("gvizScript");
-    if (oldScript) oldScript.remove();
+    <!-- Bloques view -->
+    <div id="bloques-view"></div>
 
-    // Crear nuevo script tag para forzar recarga
-    const script = document.createElement("script");
-    script.id = "gvizScript";
-    script.src = GVIZ_URL + "&t=" + Date.now();
-    script.onerror = () => showError("No se pudo cargar el Sheet. Verifica que esté publicado y accesible.");
+    <!-- Calendar view -->
+    <div id="calendar-view">
+      <div id="calendar"></div>
+    </div>
 
-    // El endpoint gviz devuelve algo tipo:
-    //   /*O_o*/\ngoogle.visualization.Query.setResponse({...JSON...});
-    // Como no podemos definir google.visualization.Query antes que cargue,
-    // interceptamos la respuesta usando un proxy.
-    window.google = window.google || {};
-    window.google.visualization = window.google.visualization || {};
-    window.google.visualization.Query = window.google.visualization.Query || {};
-    window.google.visualization.Query.setResponse = function(response) {
-      try {
-        processData(response);
-      } catch (err) {
-        console.error(err);
-        showError("Error procesando los datos: " + err.message);
-      }
+    <!-- Lista view -->
+    <div id="lista-view"></div>
+
+    <footer>
+      Arqos Systems · Task Board v7 · <a href="#" id="lock-btn">Bloquear</a>
+    </footer>
+  </div>
+
+  <!-- ============== MODAL TASK ============== -->
+  <div class="modal-overlay" id="task-modal">
+    <div class="modal">
+      <div class="modal-title" id="modal-title">Nueva tarea</div>
+      <div class="modal-sub" id="modal-sub">ARQOS · OPERACIONES</div>
+
+      <div class="form-group">
+        <label class="form-label">Tarea</label>
+        <input type="text" class="form-input" id="f-tarea" placeholder="Ej. Instalar cámaras en oficina BJ">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Bloque</label>
+          <input type="text" class="form-input" id="f-bloque" placeholder="Operaciones, Marketing…" list="bloque-list">
+          <datalist id="bloque-list"></datalist>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Asignado</label>
+          <select class="form-select" id="f-asignado">
+            <option value="César">César</option>
+            <option value="Juan Manuel">Juan Manuel</option>
+            <option value="Ambos">Ambos</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Fecha límite</label>
+          <input type="date" class="form-input" id="f-fecha">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Prioridad</label>
+          <select class="form-select" id="f-prioridad">
+            <option value="media">Media</option>
+            <option value="alta">Alta</option>
+            <option value="baja">Baja</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Tags (separados por coma)</label>
+        <input type="text" class="form-input" id="f-tags" placeholder="Cliente, CCTV, BJ">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Notas</label>
+        <textarea class="form-textarea" id="f-notas" placeholder="Detalles, contexto, links…"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Link (opcional)</label>
+        <input type="url" class="form-input" id="f-link" placeholder="https://…">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Subtareas</label>
+        <div class="sub-list" id="sub-list"></div>
+        <button class="sub-add-btn" id="sub-add">+ Agregar subtarea</button>
+      </div>
+
+      <div class="form-group" id="comment-section" style="display:none;">
+        <label class="form-label">Comentarios</label>
+        <div class="comment-list" id="comment-list"></div>
+        <input type="text" class="form-input" id="comment-input" placeholder="Agregar comentario y Enter…">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-danger" id="modal-delete" style="display:none;">🗑 Eliminar</button>
+        <button class="btn" id="modal-cancel">Cancelar</button>
+        <button class="btn btn-primary" id="modal-save">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ============== CONFIG ==============
+    const CONFIG = {
+      PIN: "3108",
+      SHEET_ID: "1lb1FgGvRC767Gd0Gv5ETIW6_-kli757IszwaF3_Bkg8",
+      SHEET_NAME: "Tareas",
+      // URL del Apps Script web app — se configura DESPUÉS del despliegue
+      APPS_SCRIPT_URL: ""
     };
 
-    document.head.appendChild(script);
+    // ============== STATE ==============
+    let TASKS = [];
+    let BLOQUES_SET = new Set();
+    let CURRENT_VIEW = "bloques";
+    let EDITING_ID = null;
+    let CALENDAR_INSTANCE = null;
+    let OPEN_BLOQUES = new Set();
 
-    // Timeout de seguridad
-    setTimeout(() => {
-      if (allTasks.length === 0 && document.querySelector(".loading")) {
-        showError("Tiempo de espera agotado. El Sheet no respondió en 10 segundos.");
+    // ============== UTILS ==============
+    function escapeHtml(str) {
+      if (str == null) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+    function toast(msg, isError = false) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.className = "toast show" + (isError ? " error" : "");
+      setTimeout(() => el.classList.remove("show"), 2800);
+    }
+    function uid() { return "t_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8); }
+    function fmtDate(d) {
+      if (!d) return "";
+      try {
+        const dt = new Date(d);
+        if (isNaN(dt)) return d;
+        const meses = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+        return dt.getDate() + " " + meses[dt.getMonth()];
+      } catch(e) { return d; }
+    }
+    function parseDate(d) {
+      if (!d) return null;
+      try {
+        const dt = new Date(d);
+        return isNaN(dt) ? null : dt.toISOString().split("T")[0];
+      } catch(e) { return null; }
+    }
+
+    // ============== LOGIN ==============
+    function checkAuth() {
+      const auth = sessionStorage.getItem("arqos_auth");
+      if (auth === "ok") showApp();
+    }
+    function showApp() {
+      document.getElementById("login-screen").classList.add("hidden");
+      document.getElementById("app-container").style.display = "block";
+      loadTasks();
+    }
+    document.getElementById("pin-btn").addEventListener("click", tryLogin);
+    document.getElementById("pin-input").addEventListener("keydown", e => {
+      if (e.key === "Enter") tryLogin();
+    });
+    function tryLogin() {
+      const val = document.getElementById("pin-input").value.trim();
+      if (val === CONFIG.PIN) {
+        sessionStorage.setItem("arqos_auth", "ok");
+        showApp();
+      } else {
+        document.getElementById("pin-error").textContent = "PIN incorrecto";
+        document.getElementById("pin-input").value = "";
       }
-    }, 10000);
-  }
+    }
+    document.getElementById("lock-btn").addEventListener("click", e => {
+      e.preventDefault();
+      sessionStorage.removeItem("arqos_auth");
+      location.reload();
+    });
 
-  function showError(msg) {
-    document.getElementById("appBody").innerHTML = `
-      <div class="error">
-        <strong>⚠️ Error</strong><br>
-        ${msg}<br><br>
-        <small>Verifica:<br>
-        1. Que el Sheet esté compartido como <em>"Cualquiera con el enlace puede ver"</em><br>
-        2. Que el ID del Sheet sea correcto: <code>${SHEET_ID}</code><br>
-        3. Que tengas conexión a internet</small>
-      </div>`;
-  }
+    // ============== DATA LOADING ==============
+    function loadTasks() {
+      document.getElementById("bloques-view").innerHTML = '<div class="loading">CARGANDO…</div>';
 
-  // ╔══════════════════════════════════════════════════════════════╗
-  // ║  PROCESAR RESPUESTA DE GVIZ                                  ║
-  // ╚══════════════════════════════════════════════════════════════╝
-  function processData(response) {
-    if (!response || !response.table || !response.table.rows) {
-      throw new Error("Formato de respuesta inesperado");
+      // Lectura vía gviz (público read-only)
+      const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
+
+      fetch(url)
+        .then(r => r.text())
+        .then(txt => {
+          const json = JSON.parse(txt.substr(47).slice(0, -2));
+          const rows = json.table.rows || [];
+          const cols = json.table.cols.map(c => (c.label || c.id || "").toLowerCase());
+
+          TASKS = rows.map((row, idx) => {
+            const cells = row.c || [];
+            const obj = { _row: idx + 2 };
+            cols.forEach((col, i) => {
+              const cell = cells[i];
+              obj[col] = cell ? (cell.f || cell.v || "") : "";
+            });
+            // Normalización de campos esperados
+            return {
+              id: obj.id || ("legacy_" + (idx + 2)),
+              bloque: obj.bloque || "General",
+              tarea: obj.tarea || "",
+              responsable: obj.responsable || obj.asignado || "",
+              fecha: parseDate(obj.fecha) || "",
+              prioridad: (obj.prioridad || "media").toLowerCase(),
+              status: (obj.status || (obj.completado === "TRUE" || obj.completado === true ? "done" : "pending")).toLowerCase(),
+              tags: obj.tags || "",
+              notas: obj.notas || "",
+              link: obj.link || "",
+              subtareas: obj.subtareas || "[]",
+              comentarios: obj.comentarios || "[]",
+              _row: idx + 2
+            };
+          }).filter(t => t.tarea);
+
+          BLOQUES_SET = new Set(TASKS.map(t => t.bloque));
+          updateBloqueDatalist();
+          render();
+        })
+        .catch(err => {
+          console.error(err);
+          document.getElementById("bloques-view").innerHTML =
+            '<div class="empty"><div class="empty-title">No se pudo cargar</div>' +
+            '<div>Verifica que el Sheet esté publicado y accesible.</div></div>';
+        });
     }
 
-    const rows = response.table.rows;
-    let lastBlock = "";
-    const tasks = [];
-
-    rows.forEach((row, idx) => {
-      if (!row.c) return;
-      const cells = row.c.map(c => (c && c.v != null) ? String(c.v).trim() : "");
-
-      const bloque = cells[0] || "";
-      const tarea = cells[1] || "";
-      const estado = cells[2] || "";
-      const responsable = cells[3] || "";
-      const link = cells[4] || "";
-      const fecha = cells[5] || "";
-      const prioridad = cells[6] || "";
-
-      if (!tarea && !bloque) return;
-      if (bloque) lastBlock = bloque;
-      if (!tarea) return;
-
-      tasks.push({
-        id: idx,
-        bloque: lastBlock,
-        tarea,
-        estado: estado || "Pendiente",
-        responsable,
-        link,
-        fecha,
-        prioridad
+    function updateBloqueDatalist() {
+      const dl = document.getElementById("bloque-list");
+      dl.innerHTML = "";
+      [...BLOQUES_SET].sort().forEach(b => {
+        const opt = document.createElement("option");
+        opt.value = b;
+        dl.appendChild(opt);
       });
-    });
-
-    allTasks = tasks;
-    const now = new Date();
-    document.getElementById("lastUpdated").textContent =
-      "Última sincronización: " + now.toLocaleString("es-MX");
-    render();
-  }
-
-  // ╔══════════════════════════════════════════════════════════════╗
-  // ║  HELPERS DE ESTADO                                           ║
-  // ╚══════════════════════════════════════════════════════════════╝
-  function normalizeEstado(e) {
-    const v = (e || "").toLowerCase();
-    if (v.includes("complet")) return "Completada";
-    if (v.includes("progres")) return "En progreso";
-    return "Pendiente";
-  }
-
-  function statusIcon(estado) {
-    const e = normalizeEstado(estado);
-    if (e === "Completada") return '<div class="task-status-icon icon-completada">✓</div>';
-    if (e === "En progreso") return '<div class="task-status-icon icon-progreso">●</div>';
-    return '<div class="task-status-icon icon-pendiente">○</div>';
-  }
-
-  function statusClass(estado) {
-    const e = normalizeEstado(estado);
-    if (e === "Completada") return "status-completada";
-    if (e === "En progreso") return "status-progreso";
-    return "status-pendiente";
-  }
-
-  // ╔══════════════════════════════════════════════════════════════╗
-  // ║  RENDER                                                      ║
-  // ╚══════════════════════════════════════════════════════════════╝
-  function render() {
-    const body = document.getElementById("appBody");
-
-    let filtered = allTasks;
-    if (currentFilter !== "all") {
-      filtered = allTasks.filter(t => normalizeEstado(t.estado) === currentFilter);
     }
 
-    const total = allTasks.length;
-    const completadas = allTasks.filter(t => normalizeEstado(t.estado) === "Completada").length;
-    const enProgreso = allTasks.filter(t => normalizeEstado(t.estado) === "En progreso").length;
-    const pendientes = allTasks.filter(t => normalizeEstado(t.estado) === "Pendiente").length;
-    const pct = total > 0 ? Math.round((completadas / total) * 100) : 0;
+    // ============== WRITE (Apps Script) ==============
+    async function writeTask(action, task) {
+      if (!CONFIG.APPS_SCRIPT_URL) {
+        // Modo local: actualizar solo en memoria
+        toast("⚠ Apps Script no configurado — cambio temporal", true);
+        return { ok: true, local: true };
+      }
+      try {
+        const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action, task, pin: CONFIG.PIN })
+        });
+        return { ok: true };
+      } catch (err) {
+        console.error(err);
+        toast("Error al guardar", true);
+        return { ok: false };
+      }
+    }
 
-    let html = `
-      <div class="stats">
-        <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">Total</div></div>
-        <div class="stat-card"><div class="stat-value" style="color:#10B981;">${completadas}</div><div class="stat-label">Completadas</div></div>
-        <div class="stat-card"><div class="stat-value" style="color:#F59E0B;">${enProgreso}</div><div class="stat-label">En progreso</div></div>
-        <div class="stat-card"><div class="stat-value" style="color:#C41E3A;">${pendientes}</div><div class="stat-label">Pendientes</div></div>
-      </div>
+    // ============== FILTERS ==============
+    function getFiltered() {
+      const q = document.getElementById("filter-search").value.toLowerCase().trim();
+      const asignado = document.getElementById("filter-asignado").value;
+      const prioridad = document.getElementById("filter-prioridad").value;
+      const status = document.getElementById("filter-status").value;
 
-      <div class="progress-overall">
-        <div class="progress-overall-label">
-          <span>Progreso general</span>
-          <span><strong>${pct}%</strong> completado</span>
-        </div>
-        <div class="progress-bar">
-          <div class="progress-fill" style="width:${pct}%"></div>
-        </div>
-      </div>
+      return TASKS.filter(t => {
+        if (q && !(t.tarea.toLowerCase().includes(q) || (t.tags || "").toLowerCase().includes(q) || (t.notas || "").toLowerCase().includes(q))) return false;
+        if (asignado && t.responsable !== asignado) return false;
+        if (prioridad && t.prioridad !== prioridad) return false;
+        if (status === "pending" && t.status === "done") return false;
+        if (status === "done" && t.status !== "done") return false;
+        return true;
+      });
+    }
 
-      <div class="controls">
-        <button class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" data-filter="all">Todas (${total})</button>
-        <button class="filter-btn ${currentFilter === 'Pendiente' ? 'active' : ''}" data-filter="Pendiente">⏳ Pendientes (${pendientes})</button>
-        <button class="filter-btn ${currentFilter === 'En progreso' ? 'active' : ''}" data-filter="En progreso">🔄 En progreso (${enProgreso})</button>
-        <button class="filter-btn ${currentFilter === 'Completada' ? 'active' : ''}" data-filter="Completada">✅ Completadas (${completadas})</button>
-        <button class="reload-btn" id="reloadBtn">↻ Recargar Sheet</button>
-      </div>
-    `;
+    // ============== RENDER ==============
+    function render() {
+      renderStats();
+      if (CURRENT_VIEW === "bloques") renderBloques();
+      else if (CURRENT_VIEW === "lista") renderLista();
+      else if (CURRENT_VIEW === "calendar") renderCalendar();
+    }
 
-    const grouped = {};
-    BLOCK_ORDER.forEach(b => grouped[b] = []);
-    filtered.forEach(t => {
-      if (!grouped[t.bloque]) grouped[t.bloque] = [];
-      grouped[t.bloque].push(t);
-    });
+    function renderStats() {
+      const total = TASKS.length;
+      const done = TASKS.filter(t => t.status === "done").length;
+      const pending = total - done;
+      const urgent = TASKS.filter(t => t.prioridad === "alta" && t.status !== "done").length;
+      const pct = total ? Math.round((done / total) * 100) : 0;
 
-    BLOCK_ORDER.forEach(blockName => {
-      const tasks = grouped[blockName] || [];
-      if (tasks.length === 0 && currentFilter !== "all") return;
+      document.getElementById("stats-bar").innerHTML = `
+        <div class="stat-card"><div class="stat-label">TOTAL</div><div class="stat-value">${total}</div></div>
+        <div class="stat-card"><div class="stat-label">PENDIENTES</div><div class="stat-value dorado">${pending}</div></div>
+        <div class="stat-card"><div class="stat-label">COMPLETADAS</div><div class="stat-value">${done}</div></div>
+        <div class="stat-card"><div class="stat-label">URGENTES</div><div class="stat-value" style="color:var(--rojo-alerta)">${urgent}</div></div>
+        <div class="stat-card"><div class="stat-label">PROGRESO</div><div class="stat-value dorado">${pct}%</div></div>
+      `;
+    }
 
-      const blockAll = allTasks.filter(t => t.bloque === blockName);
-      const blockDone = blockAll.filter(t => normalizeEstado(t.estado) === "Completada").length;
-      const blockPct = blockAll.length > 0 ? Math.round((blockDone / blockAll.length) * 100) : 0;
-      const isCollapsed = collapsedBlocks.has(blockName);
+    function renderBloques() {
+      const filtered = getFiltered();
+      const container = document.getElementById("bloques-view");
 
-      html += `
-        <div class="block ${isCollapsed ? 'collapsed' : ''}" data-block="${blockName}">
-          <div class="block-header" onclick="toggleBlock('${blockName.replace(/'/g, "\\'")}')">
-            <div class="block-title">${blockName}</div>
-            <div class="block-meta">
-              <span>${blockDone}/${blockAll.length}</span>
-              <div class="block-progress"><div class="block-progress-fill" style="width:${blockPct}%"></div></div>
-              <span>${isCollapsed ? '▸' : '▾'}</span>
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="empty"><div class="empty-title">Sin tareas</div><div>Ajusta los filtros o crea una nueva.</div></div>';
+        return;
+      }
+
+      // Agrupar por bloque
+      const groups = {};
+      filtered.forEach(t => {
+        if (!groups[t.bloque]) groups[t.bloque] = [];
+        groups[t.bloque].push(t);
+      });
+
+      const sortedBloques = Object.keys(groups).sort();
+
+      container.innerHTML = sortedBloques.map(bloque => {
+        const tasks = groups[bloque];
+        const total = tasks.length;
+        const done = tasks.filter(t => t.status === "done").length;
+        const pct = total ? Math.round((done / total) * 100) : 0;
+        const isOpen = OPEN_BLOQUES.has(bloque) || OPEN_BLOQUES.size === 0;
+
+        return `
+          <div class="bloque ${isOpen ? "open" : ""}" data-bloque="${escapeHtml(bloque)}">
+            <div class="bloque-header" onclick="toggleBloque('${escapeHtml(bloque)}')">
+              <div class="bloque-title-wrap">
+                <div class="bloque-bar"></div>
+                <div class="bloque-title">${escapeHtml(bloque)}</div>
+              </div>
+              <div class="bloque-meta">
+                <span>${done}/${total} · ${pct}%</span>
+                <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+                <span class="chevron">▼</span>
+              </div>
+            </div>
+            <div class="bloque-body">
+              ${tasks.map(renderTaskCard).join("")}
             </div>
           </div>
-          <ul class="block-tasks">
-      `;
+        `;
+      }).join("");
 
-      if (tasks.length === 0) {
-        html += `<li class="task-item"><div class="task-content" style="color:#aaa;font-size:12px;">— sin tareas en este filtro —</div></li>`;
-      } else {
-        tasks.forEach(t => {
-          const norm = normalizeEstado(t.estado);
-          const isCompleted = norm === "Completada";
-          const isLink = t.link && (t.link.startsWith("http://") || t.link.startsWith("https://"));
-          const linkHtml = isLink
-            ? `<a href="${escapeHtml(t.link)}" target="_blank" rel="noopener noreferrer" class="task-link" title="Abrir documento">📎</a>`
-            : '';
-          const noteHtml = (t.link && !isLink)
-            ? `<div class="task-note">${escapeHtml(t.link)}</div>`
-            : '';
-
-          html += `
-            <li class="task-item ${isCompleted ? 'completed' : ''}">
-              ${statusIcon(t.estado)}
-              <div class="task-content">
-                <div class="task-name">${escapeHtml(t.tarea)} ${linkHtml}</div>
-                <div class="task-meta">
-                  <span class="task-status ${statusClass(t.estado)}">${norm}</span>
-                  ${t.responsable ? `<span class="task-owner">${escapeHtml(t.responsable)}</span>` : ''}
-                  ${t.fecha ? `<span>📅 ${escapeHtml(t.fecha)}</span>` : ''}
-                  ${t.prioridad ? `<span>⚡ ${escapeHtml(t.prioridad)}</span>` : ''}
-                </div>
-                ${noteHtml}
-              </div>
-            </li>
-          `;
-        });
+      // Apertura inicial
+      if (OPEN_BLOQUES.size === 0) {
+        sortedBloques.forEach(b => OPEN_BLOQUES.add(b));
       }
+    }
 
-      html += `</ul></div>`;
+    function renderTaskCard(t) {
+      const tags = (t.tags || "").split(",").map(s => s.trim()).filter(Boolean);
+      const tagsHtml = tags.map(tg => `<span class="tag tag-custom">${escapeHtml(tg)}</span>`).join("");
+      const isLink = t.link && (t.link.startsWith("http://") || t.link.startsWith("https://"));
+
+      return `
+        <div class="task ${t.status === "done" ? "completed" : ""} priority-${t.prioridad}" data-id="${escapeHtml(t.id)}">
+          <div class="task-check ${t.status === "done" ? "checked" : ""}" onclick="toggleDone('${escapeHtml(t.id)}')"></div>
+          <div class="task-body">
+            <div class="task-name">${escapeHtml(t.tarea)}</div>
+            <div class="task-meta">
+              ${t.responsable ? `<span class="tag tag-asignado">${escapeHtml(t.responsable)}</span>` : ""}
+              ${t.prioridad ? `<span class="tag tag-prioridad-${t.prioridad}">${escapeHtml(t.prioridad)}</span>` : ""}
+              ${t.fecha ? `<span class="tag tag-fecha">${escapeHtml(fmtDate(t.fecha))}</span>` : ""}
+              ${tagsHtml}
+              ${isLink ? `<a href="${escapeHtml(t.link)}" target="_blank" rel="noopener noreferrer" class="tag tag-fecha" style="text-decoration:none;">📎 Link</a>` : ""}
+            </div>
+          </div>
+          <div class="task-actions">
+            <button class="icon-btn" onclick="openEdit('${escapeHtml(t.id)}')" title="Editar">✎</button>
+            <button class="icon-btn danger" onclick="deleteTask('${escapeHtml(t.id)}')" title="Eliminar">×</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderLista() {
+      const filtered = getFiltered();
+      const container = document.getElementById("lista-view");
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="empty"><div class="empty-title">Sin tareas</div></div>';
+        return;
+      }
+      container.innerHTML = `
+        <table class="lista-table">
+          <thead>
+            <tr>
+              <th>✓</th><th>TAREA</th><th>BLOQUE</th><th>ASIGNADO</th><th>FECHA</th><th>PRIORIDAD</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filtered.map(t => `
+              <tr ${t.status === "done" ? 'style="opacity:0.5"' : ""}>
+                <td><div class="task-check ${t.status === "done" ? "checked" : ""}" onclick="toggleDone('${escapeHtml(t.id)}')" style="display:inline-flex;"></div></td>
+                <td>${escapeHtml(t.tarea)}</td>
+                <td><span class="tag tag-custom">${escapeHtml(t.bloque)}</span></td>
+                <td>${t.responsable ? `<span class="tag tag-asignado">${escapeHtml(t.responsable)}</span>` : ""}</td>
+                <td>${t.fecha ? fmtDate(t.fecha) : "—"}</td>
+                <td>${t.prioridad ? `<span class="tag tag-prioridad-${t.prioridad}">${escapeHtml(t.prioridad)}</span>` : ""}</td>
+                <td>
+                  <button class="icon-btn" onclick="openEdit('${escapeHtml(t.id)}')">✎</button>
+                  <button class="icon-btn danger" onclick="deleteTask('${escapeHtml(t.id)}')">×</button>
+                </td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function renderCalendar() {
+      const filtered = getFiltered();
+      const events = filtered.filter(t => t.fecha).map(t => ({
+        id: t.id,
+        title: t.tarea,
+        start: t.fecha,
+        className: `priority-${t.prioridad} ${t.status === "done" ? "completed" : ""}`,
+        extendedProps: { task: t }
+      }));
+
+      const calEl = document.getElementById("calendar");
+      if (CALENDAR_INSTANCE) {
+        CALENDAR_INSTANCE.removeAllEvents();
+        CALENDAR_INSTANCE.addEventSource(events);
+        return;
+      }
+      CALENDAR_INSTANCE = new FullCalendar.Calendar(calEl, {
+        initialView: "dayGridMonth",
+        locale: "es",
+        headerToolbar: {
+          left: "prev,next today",
+          center: "title",
+          right: "dayGridMonth,timeGridWeek"
+        },
+        buttonText: { today: "Hoy", month: "Mes", week: "Semana" },
+        firstDay: 1,
+        events: events,
+        eventClick: (info) => {
+          const t = info.event.extendedProps.task;
+          if (t) openEdit(t.id);
+        },
+        height: "auto"
+      });
+      CALENDAR_INSTANCE.render();
+    }
+
+    // ============== INTERACTIONS ==============
+    window.toggleBloque = function(bloque) {
+      if (OPEN_BLOQUES.has(bloque)) OPEN_BLOQUES.delete(bloque);
+      else OPEN_BLOQUES.add(bloque);
+      renderBloques();
+    };
+
+    window.toggleDone = async function(id) {
+      const t = TASKS.find(x => x.id === id);
+      if (!t) return;
+      t.status = t.status === "done" ? "pending" : "done";
+      render();
+      await writeTask("update", t);
+    };
+
+    window.openEdit = function(id) {
+      const t = TASKS.find(x => x.id === id);
+      if (!t) return;
+      EDITING_ID = id;
+      document.getElementById("modal-title").textContent = "Editar tarea";
+      document.getElementById("modal-sub").textContent = "ARQOS · " + (t.bloque || "").toUpperCase();
+      document.getElementById("f-tarea").value = t.tarea || "";
+      document.getElementById("f-bloque").value = t.bloque || "";
+      document.getElementById("f-asignado").value = t.responsable || "César";
+      document.getElementById("f-fecha").value = t.fecha || "";
+      document.getElementById("f-prioridad").value = t.prioridad || "media";
+      document.getElementById("f-tags").value = t.tags || "";
+      document.getElementById("f-notas").value = t.notas || "";
+      document.getElementById("f-link").value = t.link || "";
+      document.getElementById("modal-delete").style.display = "inline-flex";
+      document.getElementById("comment-section").style.display = "block";
+      renderSubtareas(t.subtareas);
+      renderComentarios(t.comentarios);
+      document.getElementById("task-modal").classList.add("active");
+    };
+
+    window.deleteTask = async function(id) {
+      if (!confirm("¿Eliminar esta tarea? Esta acción no se puede deshacer.")) return;
+      const t = TASKS.find(x => x.id === id);
+      if (!t) return;
+      TASKS = TASKS.filter(x => x.id !== id);
+      render();
+      await writeTask("delete", t);
+      toast("Tarea eliminada");
+    };
+
+    document.getElementById("btn-new").addEventListener("click", () => {
+      EDITING_ID = null;
+      document.getElementById("modal-title").textContent = "Nueva tarea";
+      document.getElementById("modal-sub").textContent = "ARQOS · OPERACIONES";
+      document.querySelectorAll("#task-modal .form-input, #task-modal .form-select, #task-modal .form-textarea").forEach(el => el.value = "");
+      document.getElementById("f-asignado").value = "César";
+      document.getElementById("f-prioridad").value = "media";
+      document.getElementById("modal-delete").style.display = "none";
+      document.getElementById("comment-section").style.display = "none";
+      renderSubtareas("[]");
+      renderComentarios("[]");
+      document.getElementById("task-modal").classList.add("active");
     });
 
-    body.innerHTML = html;
+    document.getElementById("modal-cancel").addEventListener("click", () => {
+      document.getElementById("task-modal").classList.remove("active");
+    });
 
-    document.querySelectorAll(".filter-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        currentFilter = btn.dataset.filter;
+    document.getElementById("modal-delete").addEventListener("click", () => {
+      if (EDITING_ID) {
+        deleteTask(EDITING_ID);
+        document.getElementById("task-modal").classList.remove("active");
+      }
+    });
+
+    document.getElementById("modal-save").addEventListener("click", async () => {
+      const tarea = document.getElementById("f-tarea").value.trim();
+      if (!tarea) { toast("Falta el nombre de la tarea", true); return; }
+
+      const subtareas = JSON.stringify(collectSubtareas());
+
+      const task = {
+        id: EDITING_ID || uid(),
+        tarea,
+        bloque: document.getElementById("f-bloque").value.trim() || "General",
+        responsable: document.getElementById("f-asignado").value,
+        fecha: document.getElementById("f-fecha").value,
+        prioridad: document.getElementById("f-prioridad").value,
+        tags: document.getElementById("f-tags").value.trim(),
+        notas: document.getElementById("f-notas").value.trim(),
+        link: document.getElementById("f-link").value.trim(),
+        subtareas,
+        status: "pending"
+      };
+
+      if (EDITING_ID) {
+        const existing = TASKS.find(t => t.id === EDITING_ID);
+        if (existing) {
+          task.status = existing.status;
+          task.comentarios = existing.comentarios;
+          Object.assign(existing, task);
+        }
+      } else {
+        task.comentarios = "[]";
+        TASKS.unshift(task);
+      }
+
+      BLOQUES_SET.add(task.bloque);
+      updateBloqueDatalist();
+      render();
+      document.getElementById("task-modal").classList.remove("active");
+      await writeTask(EDITING_ID ? "update" : "create", task);
+      toast(EDITING_ID ? "Tarea actualizada" : "Tarea creada");
+    });
+
+    // Subtareas
+    function renderSubtareas(json) {
+      const list = document.getElementById("sub-list");
+      list.innerHTML = "";
+      let arr = [];
+      try { arr = JSON.parse(json || "[]"); } catch(e) {}
+      arr.forEach(s => addSubtareaRow(s.text, s.done));
+    }
+    function addSubtareaRow(text = "", done = false) {
+      const list = document.getElementById("sub-list");
+      const row = document.createElement("div");
+      row.className = "sub-item";
+      row.innerHTML = `
+        <div class="sub-check ${done ? "checked" : ""}" data-done="${done}"></div>
+        <input type="text" value="${escapeHtml(text)}">
+        <button class="icon-btn" type="button" style="width:20px;height:20px">×</button>
+      `;
+      row.querySelector(".sub-check").addEventListener("click", e => {
+        const isDone = e.target.dataset.done === "true";
+        e.target.dataset.done = !isDone;
+        e.target.classList.toggle("checked", !isDone);
+      });
+      row.querySelector("button").addEventListener("click", () => row.remove());
+      list.appendChild(row);
+    }
+    function collectSubtareas() {
+      return [...document.querySelectorAll("#sub-list .sub-item")].map(row => ({
+        text: row.querySelector("input").value,
+        done: row.querySelector(".sub-check").dataset.done === "true"
+      })).filter(s => s.text.trim());
+    }
+    document.getElementById("sub-add").addEventListener("click", () => addSubtareaRow());
+
+    // Comentarios
+    function renderComentarios(json) {
+      const list = document.getElementById("comment-list");
+      list.innerHTML = "";
+      let arr = [];
+      try { arr = JSON.parse(json || "[]"); } catch(e) {}
+      arr.forEach(c => {
+        const div = document.createElement("div");
+        div.className = "comment";
+        div.innerHTML = `<div class="comment-meta">${escapeHtml(c.author || "—")} · ${escapeHtml(c.date || "")}</div><div class="comment-text">${escapeHtml(c.text || "")}</div>`;
+        list.appendChild(div);
+      });
+    }
+    document.getElementById("comment-input").addEventListener("keydown", async e => {
+      if (e.key === "Enter" && EDITING_ID && e.target.value.trim()) {
+        const t = TASKS.find(x => x.id === EDITING_ID);
+        if (!t) return;
+        let arr = [];
+        try { arr = JSON.parse(t.comentarios || "[]"); } catch(err) {}
+        arr.push({
+          author: "César",
+          date: new Date().toISOString().split("T")[0],
+          text: e.target.value.trim()
+        });
+        t.comentarios = JSON.stringify(arr);
+        e.target.value = "";
+        renderComentarios(t.comentarios);
+        await writeTask("update", t);
+      }
+    });
+
+    // Tabs
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        CURRENT_VIEW = tab.dataset.view;
+        document.getElementById("bloques-view").style.display = CURRENT_VIEW === "bloques" ? "block" : "none";
+        document.getElementById("calendar-view").style.display = CURRENT_VIEW === "calendar" ? "block" : "none";
+        document.getElementById("lista-view").style.display = CURRENT_VIEW === "lista" ? "block" : "none";
         render();
       });
     });
-    document.getElementById("reloadBtn").addEventListener("click", loadData);
-  }
 
-  function toggleBlock(name) {
-    if (collapsedBlocks.has(name)) collapsedBlocks.delete(name);
-    else collapsedBlocks.add(name);
-    render();
-  }
-  window.toggleBlock = toggleBlock;
+    // Filtros
+    ["filter-search", "filter-asignado", "filter-prioridad", "filter-status"].forEach(id => {
+      document.getElementById(id).addEventListener("input", render);
+      document.getElementById(id).addEventListener("change", render);
+    });
 
-  function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
-  }
+    // Reload
+    document.getElementById("btn-reload").addEventListener("click", loadTasks);
 
-  loadData();
-</script>
+    // Init
+    checkAuth();
+  </script>
 </body>
 </html>
